@@ -667,47 +667,6 @@ be read as a claim that they have already improved.
 - Recommendation consistency across repeated runs of the same question.
 - Percentage of generated briefs that required manual correction before use.
 
-## Interview talking points
-
-1. **The loop is generic; the agent is not.** `loop.py` only knows about
-   `stop_reason`, tool execution, and iteration caps - it has no idea what
-   a "feature" or "evidence type" is. That separation is what let me test
-   the loop mechanics and the domain logic independently.
-2. **Message history is the agent's only memory**, and that's demonstrated,
-   not just claimed - Bug mode 1 shows what happens when a tool result never
-   makes it into history: the agent's evidence state can never advance, so
-   it repeats the same request until it hits the iteration cap.
-3. **Stopping conditions are as important as continuation logic.** This
-   project explicitly handles four distinct ways a run can end
-   (`end_turn`, `unknown_stop_reason`, `max_iterations_reached`, and the
-   intentional `bug_mode_end_too_early`), because an agent that never stops
-   safely is more dangerous than one that stops too early.
-4. **Determinism was a deliberate design constraint**, not a limitation I
-   settled for. A mock model that reasons over structured evidence state
-   (rather than free text) means every scenario in this README is
-   reproducible on every run - which made writing tests for edge cases
-   (retries, failures, unknown stop reasons) straightforward instead of
-   flaky.
-5. **The recommendation schema forces honesty about uncertainty.**
-   `confidence` and `human_decision_required` aren't decorative - the
-   recommendation logic actively caps confidence and blocks strong
-   recommendations ("Build now") whenever critical evidence (customer
-   demand or engineering effort) is missing.
-6. **Context isolation has to be structural, not a promise.** In Module 2,
-   a subagent's `ContextPackage` simply has no field for "other agents'
-   results" or "coordinator history" - it's not that the agent is told not
-   to look, there's nothing there to look at. That's what makes isolation
-   testable ([tests/test_context_isolation.py](tests/test_context_isolation.py))
-   instead of just asserted in a docstring.
-7. **The hub shouldn't average away a critical failure.** The aggregator
-   explicitly checks whether a *critical* agent (customer insights or
-   technical feasibility) failed before computing a score - a strong result
-   from three agents never quietly outvotes one missing critical input.
-8. **Tool scoping is a permission boundary, not a suggestion.** Each
-   subagent's `allowed_tools` is enforced in code (`ToolNotAuthorizedError`),
-   so "the market research agent doesn't use the risk checker" is a fact you
-   can write a test against, not just an intention in a docstring.
-
 ## Portfolio Case Study
 
 ### Problem
@@ -726,9 +685,6 @@ missing, what contradicts what, and where a human still needs to decide.
 
 ### My role
 
-*(Editable - write your own observations here. Nothing below is invented on
-your behalf.)*
-
 - How I defined the workflow:
 - How I selected the specialist roles:
 - How I defined context boundaries:
@@ -746,8 +702,6 @@ your behalf.)*
 - Product decision support (not automated decision-making)
 
 ## What I learned
-
-*(Editable - write your own observations here.)*
 
 - What I learned about tool-use loops:
 - Why message history matters:
