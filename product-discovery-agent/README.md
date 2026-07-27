@@ -56,6 +56,20 @@ python app.py --mode coordinator --scenario dark-mode
 
 See [Module 2: Hub-and-Spoke Product Discovery](#module-2-hub-and-spoke-product-discovery) below.
 
+**Live mode (new):** the same loop can also run for real - a real LLM
+(via [OpenRouter](https://openrouter.ai)) deciding for itself which tools to
+call, backed by real web search (customer reviews, competitor adoption)
+instead of any synthetic data:
+
+```bash
+echo "OPENROUTER_API_KEY=your-real-key" > .env   # never commit this file
+python app.py --mode live --question "Should we add a Slack integration?"
+```
+
+See [Live Mode: Real LLM + Real Web Search](#live-mode-real-llm--real-web-search)
+below - this one costs a small amount per run and results vary between runs,
+unlike the free, deterministic modes above.
+
 ---
 
 ## Table of contents
@@ -68,6 +82,7 @@ See [Module 2: Hub-and-Spoke Product Discovery](#module-2-hub-and-spoke-product-
 - [Example workflow: dark mode, start to finish](#example-workflow-dark-mode-start-to-finish)
 - [Failure scenarios](#failure-scenarios)
 - [Module 2: Hub-and-Spoke Product Discovery](#module-2-hub-and-spoke-product-discovery)
+- [Live Mode: Real LLM + Real Web Search](#live-mode-real-llm--real-web-search)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Testing](#testing)
@@ -367,6 +382,63 @@ about evidence gathering was rebuilt from scratch. Module 1's agentic loop
 Full architecture diagrams (flowchart, sequence diagram, and a failure-path
 diagram) are in [docs/architecture.md](docs/architecture.md).
 
+## Live Mode: Real LLM + Real Web Search
+
+Modules 1 and 2 above are deliberately offline and deterministic - free to
+run, reproducible on every call, and safe to test in CI. **Live mode** is the
+same tool-use shape wired to the real world instead: a real LLM decides for
+itself which tools to call, and every tool result comes from a live web
+search - no synthetic JSON anywhere.
+
+```bash
+echo "OPENROUTER_API_KEY=your-real-key" > .env   # gitignored - never commit a real key
+python app.py --mode live --scenario dark-mode
+python app.py --mode live --question "Should we add a Slack integration to our project management tool?"
+python app.py --mode live --question "..." --save-trace output/live-transcript.json
+```
+
+### How it's different from Modules 1 and 2
+
+| | Modules 1 & 2 (mock) | Live mode |
+|---|---|---|
+| Model | `MockModel` - deterministic, rule-based, no network | Real LLM via [OpenRouter](https://openrouter.ai) (`anthropic/claude-haiku-4.5` by default), deciding tool calls itself |
+| Data | Local synthetic JSON (`data/*.json`) | Real web search results (`perplexity/sonar-pro` via OpenRouter), fetched live per run |
+| Cost | Free | Costs a small amount per run (OpenRouter billing) |
+| Reproducibility | Identical output every run | Output varies run to run, like any real LLM + live search |
+| Requires | Nothing | `OPENROUTER_API_KEY` in a local `.env` |
+| Tested by | 92 offline pytest tests | 10 offline unit tests on parsing/schema/dispatch only (`tests/test_live_mode.py`) - no test makes a real network call |
+
+### Architecture
+
+- [`src/llm/openrouter_client.py`](src/llm/openrouter_client.py) - the only
+  place that talks to the network. `chat()` drives the agent's real
+  tool-calling loop; `search()` is a web-search-grounded call used inside
+  each live tool.
+- [`src/live_tools/`](src/live_tools/) - four tools, each making a real
+  `search()` call: `customer_feedback_search` (real reviews/forum
+  sentiment), `competitor_research` (real named competitors),
+  `engineering_effort_estimate` (grounded by how this class of feature is
+  typically built - not a lookup against any real codebase),
+  `risk_and_metrics_check` (real regulatory/accessibility considerations
+  plus proposed metrics).
+- [`src/live_agent.py`](src/live_agent.py) - the loop itself: same shape as
+  Module 1 (`tool_use` -> execute -> append result -> continue; otherwise ->
+  final answer), but the model - not scripted logic - decides when it has
+  enough evidence, and can call multiple tools in one turn on its own.
+
+### What's still honest about its limits
+
+- There is no real internal analytics or support-ticket data source
+  connected - `customer_feedback_search` searches **public** reviews and
+  forums only, and says so in every result.
+- `engineering_effort_estimate` is real LLM reasoning grounded by public
+  discussion of similar features, not an assessment of any specific
+  company's actual codebase - every result states this explicitly.
+- Web search results and LLM judgment can be wrong, incomplete, or
+  contradictory between runs, same as asking any human researcher to
+  search the web on short notice. `human_decision_required` is always
+  `true` here too.
+
 ## Installation
 
 ```bash
@@ -417,6 +489,12 @@ python app.py --mode coordinator --scenario dark-mode --failure-agent market_res
 python app.py --mode coordinator --scenario dark-mode --missing-context-agent technical_feasibility
 python app.py --mode coordinator --scenario unknown-feature                   # all subagents fail
 python app.py --mode coordinator --scenario dark-mode --save-trace output/coordinator-trace.json
+
+# --- Live mode: real LLM + real web search (needs OPENROUTER_API_KEY in .env) ---
+
+python app.py --mode live --scenario dark-mode
+python app.py --mode live --question "Should we add a Slack integration to our project management tool?"
+python app.py --mode live --question "..." --quiet --save-trace output/live-transcript.json
 ```
 
 Run `python app.py --help` for the full flag list.
@@ -428,7 +506,9 @@ pip install -r requirements.txt
 python -m pytest tests/ -v
 ```
 
-82 tests across eleven files. The original 35 (five files) cover Module 1's
+92 tests across twelve files, all free and offline (live mode's own tests
+only check JSON parsing, schema shape, and dispatch wiring - never a real
+network call). The original 35 (five files) cover Module 1's
 loop mechanics, structured history, all five tools, recommendation schema
 validation, tool failure/retry handling, both bug modes, the iteration cap,
 unknown stop reasons, and a static scan for accidental secrets or
@@ -436,7 +516,8 @@ sensitive-data patterns - **unchanged and still passing**. 47 new tests
 (six files) cover Module 2: task decomposition, context isolation, per-agent
 tool authorization, result validation, retry policy, aggregation/confidence/
 contradiction logic, and full coordinator success/failure/schema/trace-export
-paths.
+paths. 10 new tests (one file, `test_live_mode.py`) cover live mode's JSON
+extraction, tool-schema shape, and dispatch wiring.
 
 ## Evaluation
 
@@ -520,20 +601,26 @@ Structured result (abridged, full version in
 
 ## Limitations
 
-- The default model is **simulated** (deterministic mock logic), not a real
-  LLM - it never generates free text or reasons outside the structured
-  `EvidencePlan` it's given.
-- All customer feedback, analytics, competitor, effort, and risk data is
-  **synthetic** and fabricated for teaching purposes; it does not describe
-  any real product, company, or customer.
-- Engineering effort estimates are **relative and illustrative** (Low /
-  Medium / High / Unknown), not real production commitments.
-- Recommendations are **decision support, not decision-making** - they do
-  not replace a human product manager's judgment, and `human_decision_required`
-  is always `true` for that reason.
-- A real deployment would require live data integrations, monitoring,
-  evaluation datasets, security review, and governance well beyond what a
-  local demo needs.
+- In `--mode single-agent` / `--mode coordinator` (the default, free,
+  reproducible modes), the model is **simulated** (deterministic mock
+  logic) and all data is **synthetic** - see below for what changes in
+  `--mode live`.
+- All synthetic customer feedback, analytics, competitor, effort, and risk
+  data used by the mock modes is fabricated for teaching purposes; it does
+  not describe any real product, company, or customer.
+- Engineering effort estimates (in every mode) are **relative and
+  illustrative**, not real production commitments - live mode's estimate is
+  grounded by public discussion of similar features, not your actual code.
+- Recommendations are **decision support, not decision-making** in every
+  mode - they do not replace a human product manager's judgment, and
+  `human_decision_required` is always `true` for that reason.
+- **Live mode specifically:** results vary between runs (it's a real LLM
+  making real web searches, not a deterministic function); customer feedback
+  comes from public reviews/forums only, never a real support-ticket system;
+  and each run costs a small amount of real money via OpenRouter billing.
+- A real deployment would require additional data integrations (e.g. a real
+  analytics warehouse, real support-ticket export), monitoring, evaluation
+  datasets, security review, and governance well beyond what this demo needs.
 - **Module 2 specifically:** subagents run sequentially, not in parallel
   (parallel execution is intentionally left for a future module); the retry
   policy only knows how to recover from one specific missing-context case
@@ -542,17 +629,18 @@ Structured result (abridged, full version in
 
 ## Future improvements
 
-- Connect the customer feedback tool to a real feedback platform (e.g. a
-  support/CRM export) instead of static JSON.
-- Connect the analytics tool to a real product analytics warehouse.
+- Connect the live customer-feedback tool to a real feedback platform (e.g.
+  a support/CRM export) instead of public web search only.
+- Connect a live analytics tool to a real product analytics warehouse
+  (Amplitude, Mixpanel, PostHog, etc.) - not yet built in live mode.
 - Add human approval checkpoints before a recommendation is considered final.
 - Add an evaluation dataset and scoring harness to measure recommendation
-  quality over time.
-- Add tool-call monitoring/observability (latency, error rates, retry counts).
-- Add a real Anthropic API adapter behind an environment variable
-  (`ANTHROPIC_API_KEY`, see [.env.example](.env.example)) implementing the
-  same `respond(evidence_plan, iteration)` interface as `MockModel`, so the
-  loop itself never has to change.
+  quality over time (beyond `evaluate.py`'s current schema/selection checks).
+- Add tool-call monitoring/observability (latency, error rates, retry counts,
+  and real OpenRouter cost per run).
+- ~~Add a real API adapter behind an environment variable~~ - **done**: see
+  [Live Mode](#live-mode-real-llm--real-web-search) (`src/llm/openrouter_client.py`).
+  A remaining step is a direct Anthropic API adapter as an alternative to OpenRouter.
 - Add confidence calibration informed by how often past recommendations at
   a given confidence level turned out to be right.
 - Add a lightweight web interface on top of the same agent/loop code.

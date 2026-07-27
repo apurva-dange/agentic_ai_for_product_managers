@@ -24,11 +24,18 @@ Module 2 (hub-and-spoke coordinator):
     python app.py --mode coordinator --scenario dark-mode --save-trace output/coordinator-trace.json
     python app.py --mode coordinator --scenario onboarding --show-task-plan   (market_research is skipped)
     python app.py --mode coordinator --scenario unknown-feature              (all agents fail)
+
+Live mode (real LLM + real web search via OpenRouter - requires
+OPENROUTER_API_KEY in a local .env file, see .env.example):
+    python app.py --mode live --scenario dark-mode
+    python app.py --mode live --question "Should we add a Slack integration?"
+    python app.py --mode live --question "..." --save-trace output/live-transcript.json
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -72,12 +79,20 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Prompt for a free-text product question instead of a preset scenario.",
     )
+    scenario_group.add_argument(
+        "--question",
+        metavar="TEXT",
+        help="Provide the product question directly as an argument (any mode; most useful with --mode live).",
+    )
 
     parser.add_argument(
         "--mode",
-        choices=["single-agent", "coordinator"],
+        choices=["single-agent", "coordinator", "live"],
         default="single-agent",
-        help="single-agent (default, Module 1) or coordinator (Module 2 hub-and-spoke).",
+        help=(
+            "single-agent (default, Module 1, offline mock), coordinator (Module 2, offline mock "
+            "hub-and-spoke), or live (real LLM + real web search via OpenRouter, needs an API key)."
+        ),
     )
 
     single_agent_group = parser.add_argument_group("single-agent mode options (Module 1)")
@@ -204,14 +219,42 @@ def run_coordinator(args: argparse.Namespace, question: str) -> None:
         print(f"\nTrace saved to: {saved_path}")
 
 
+def run_live(args: argparse.Namespace, question: str) -> None:
+    # Imported lazily so offline modes never require `requests` or an API key.
+    from live_agent import run_live_agent
+    from llm.openrouter_client import OpenRouterError
+
+    try:
+        result = run_live_agent(question, verbose=not args.quiet, max_iterations=args.max_iterations)
+    except OpenRouterError as exc:
+        print(f"\nERROR: {exc}")
+        sys.exit(1)
+
+    if args.quiet:
+        print(json.dumps(result.final_answer, indent=2))
+
+    if args.save_trace:
+        output_path = Path(args.save_trace)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(result.transcript, indent=2, default=str))
+        print(f"\nTranscript saved to: {output_path}")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    question = SCENARIOS[args.scenario] if args.scenario else get_question()
+    if args.scenario:
+        question = SCENARIOS[args.scenario]
+    elif args.question:
+        question = args.question
+    else:
+        question = get_question()
 
     if args.mode == "coordinator":
         run_coordinator(args, question)
+    elif args.mode == "live":
+        run_live(args, question)
     else:
         run_single_agent(args, question)
 
