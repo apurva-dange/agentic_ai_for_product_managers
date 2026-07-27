@@ -1,0 +1,92 @@
+{
+  "_meta": {
+    "description": "Synthetic competitor research for the Product Discovery Agent demo. Competitor names are fictional placeholders and do not represent real companies.",
+    "synthetic": true
+  },
+  "features": {
+    "dark_mode": {
+      "aliases": ["dark mode", "dark theme", "night mode"],
+      "category": "productivity_saas",
+      "offer": [
+        {"competitor": "Nimbus Works", "implementation": "System-aware dark theme with manual override, available on web and desktop apps."},
+        {"competitor": "Ledgerly", "implementation": "Full dark theme including charts and data visualizations."},
+        {"competitor": "Fieldscope", "implementation": "Dark theme available only on desktop, not yet on mobile."}
+      ],
+      "do_not_offer": [
+        {"competitor": "Basecamp Lite (demo)"},
+        {"competitor": "Rosterly (demo)"}
+      ],
+      "differentiation_opportunities": [
+        "Few competitors extend dark theming to data visualizations/charts - doing this well could be a differentiator.",
+        "Scheduled auto-switching (sunrise/sunset based) is not common among tracked competitors."
+      ],
+      "source_references": ["synthetic-demo-competitor-scan-2026-Q1"]
+    },
+    "mobile_app": {
+      "aliases": ["mobile app", "mobile application", "ios app", "android app"],
+      "category": "productivity_saas",
+      "offer": [
+        {"competitor": "Nimbus Works", "implementation": "Native iOS and Android apps with offline caching for core workflows."},
+        {"competitor": "Fieldscope", "implementation": "Native Android app targeted at field/warehouse workers; iOS in beta."}
+      ],
+      "do_not_offer": [
+        {"competitor": "Ledgerly (demo)"},
+        {"competitor": "Basecamp Lite (demo)"}
+      ],
+      "differentiation_opportunities": [
+        "No tracked competitor offers a lightweight approval-only mobile experience - a focused 'approvals and alerts' app could be a faster, lower-scope entry point than a full native rebuild."
+      ],
+      "source_references": ["synthetic-demo-competitor-scan-2026-Q1"]
+    },
+    "ai_meeting_summary": {
+      "aliases": ["ai meeting summary", "meeting summaries", "meeting notes", "ai summarization"],
+      "category": "collaboration_saas",
+      "offer": [
+        {"competitor": "Ledgerly", "implementation": "AI-generated call summaries with action item extraction, opt-in per call."},
+        {"competitor": "Huddle Metrics", "implementation": "Automatic transcript plus summary emailed after every recorded call."}
+      ],
+      "do_not_offer": [
+        {"competitor": "Fieldscope (demo)"},
+        {"competitor": "Rosterly (demo)"}
+      ],
+      "differentiation_opportunities": [
+        "Competitors summarize generically; none tracked tie summaries back into structured follow-up tasks inside the product itself - closing that loop could be a differentiator.",
+        "Data-handling transparency (where transcripts are stored, retention period) is not clearly communicated by any tracked competitor - a clear privacy story could build trust."
+      ],
+      "source_references": ["synthetic-demo-competitor-scan-2026-Q1"]
+    },
+    "onboarding": {
+      "aliases": ["onboarding", "onboarding process", "new user onboarding", "setup flow"],
+      "category": "productivity_saas",
+      "offer": [
+        {"competitor": "Nimbus Works", "implementation": "Interactive checklist with progress bar and in-app tooltips for first 7 days."},
+        {"competitor": "Ledgerly", "implementation": "Guided setup wizard plus an assigned onboarding specialist for enterprise tier."},
+        {"competitor": "Huddle Metrics", "implementation": "Template-based quick start reduces time-to-first-value for common use cases."}
+      ],
+      "do_not_offer": [
+        {"competitor": "Rosterly (demo)"}
+      ],
+      "differentiation_opportunities": [
+        "Most competitors gate guided onboarding behind enterprise pricing tiers - offering a lightweight self-serve checklist to all tiers could be a differentiator.",
+        "None tracked show setup progress relative to similar customers ('teams like yours typically finish step 3 in 2 days') - a benchmarking nudge could improve completion."
+      ],
+      "source_references": ["synthetic-demo-competitor-scan-2026-Q1"]
+    },
+    "export_pdf": {
+      "aliases": ["export to pdf", "pdf export", "export report", "download pdf"],
+      "category": "productivity_saas",
+      "offer": [
+        {"competitor": "Ledgerly", "implementation": "One-click PDF export with company branding on every report."},
+        {"competitor": "Nimbus Works", "implementation": "PDF export available for select report types, not all."}
+      ],
+      "do_not_offer": [
+        {"competitor": "Fieldscope (demo)"},
+        {"competitor": "Huddle Metrics (demo)"}
+      ],
+      "differentiation_opportunities": [
+        "Few competitors support scheduled/automated recurring PDF exports (e.g., emailed monthly) - this could reduce manual reporting work for customers."
+      ],
+      "source_references": ["synthetic-demo-competitor-scan-2026-Q1"]
+    }
+  }
+}

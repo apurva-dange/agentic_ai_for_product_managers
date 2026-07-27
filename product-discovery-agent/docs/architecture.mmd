@@ -1,0 +1,20 @@
+flowchart TD
+    User([User: product question]) --> Agent[Product Discovery Agent]
+    Agent --> Planner[Evidence Planner\nbuilds EvidencePlan]
+    Planner --> Loop[Agentic Loop\nloop.run_loop]
+
+    Loop -->|stop_reason == tool_use| Router[Tool Router\ntools.execute_tool]
+    Router --> Tools[Local Product Tools\ncustomer feedback / analytics /\ncompetitor / effort / risk]
+    Tools --> Results[Tool Results]
+    Results --> History[(Message History)]
+    History --> Decision{Continue or Stop?}
+    Decision -->|evidence still outstanding| Loop
+    Decision -->|max_iterations reached| Halt[Stop: max_iterations_reached]
+    Decision -->|unknown stop_reason| Halt2[Stop: unknown_stop_reason]
+
+    Loop -->|stop_reason == end_turn| Complete{Evidence plan complete?}
+    Complete --> Recommendation[Structured Recommendation\nrecommendations.build_recommendation]
+    Halt --> Recommendation
+    Halt2 --> Recommendation
+
+    Recommendation --> Output([Final JSON recommendation + trace])

@@ -1,0 +1,141 @@
+{
+  "_meta": {
+    "description": "Synthetic product usage analytics for the Product Discovery Agent demo. All metrics are fabricated and illustrative only; they do not represent a real product.",
+    "synthetic": true
+  },
+  "features": {
+    "dark_mode": {
+      "aliases": ["dark mode", "dark theme", "night mode"],
+      "metric_area": "session behavior by time of day",
+      "usage_patterns": [
+        "22% of total sessions occur between 8pm and 6am local time.",
+        "Evening sessions (8pm-6am) average 6.4 minutes vs 9.1 minutes for daytime sessions."
+      ],
+      "drop_off_rates": {
+        "evening_session_abandonment_pct": 31,
+        "daytime_session_abandonment_pct": 18
+      },
+      "session_info": {
+        "evening_sessions_pct_of_total": 22,
+        "evening_avg_session_minutes": 6.4,
+        "daytime_avg_session_minutes": 9.1
+      },
+      "accessibility_signals": [
+        "Support tickets tagged 'eye strain' or 'brightness' rose 14% quarter-over-quarter.",
+        "3 tickets explicitly referenced light sensitivity or migraine triggers."
+      ],
+      "trends": [
+        "Evening session abandonment has increased slightly over the last two quarters."
+      ],
+      "data_limitations": [
+        "Higher evening abandonment is correlational, not causal - it may reflect fatigue, device switching, or notification interruptions rather than screen brightness.",
+        "The analytics system does not currently capture ambient lighting or device brightness settings.",
+        "Sample size for night-time sessions is smaller than daytime, widening the confidence interval on these figures."
+      ]
+    },
+    "mobile_app": {
+      "aliases": ["mobile app", "mobile application", "ios app", "android app"],
+      "metric_area": "mobile web usage vs desktop",
+      "usage_patterns": [
+        "Mobile web sessions account for 16% of total traffic, up from 9% a year ago.",
+        "Mobile web users complete core workflows at roughly half the rate of desktop users."
+      ],
+      "drop_off_rates": {
+        "mobile_web_task_abandonment_pct": 47,
+        "desktop_task_abandonment_pct": 12
+      },
+      "session_info": {
+        "mobile_web_sessions_pct_of_total": 16,
+        "avg_mobile_web_session_minutes": 3.1,
+        "avg_desktop_session_minutes": 8.7
+      },
+      "accessibility_signals": [
+        "Tap target size complaints appear in 5 support tickets over the last quarter."
+      ],
+      "trends": [
+        "Mobile web traffic share has grown steadily for four consecutive quarters."
+      ],
+      "data_limitations": [
+        "Mobile web abandonment may reflect a poorly responsive layout rather than proof that a native app is needed.",
+        "No data currently distinguishes iOS vs Android usage patterns.",
+        "Analytics cannot separate intentional short visits (quick lookups) from true task abandonment."
+      ]
+    },
+    "ai_meeting_summary": {
+      "aliases": ["ai meeting summary", "meeting summaries", "meeting notes", "ai summarization"],
+      "metric_area": "manual notes and call-recording usage",
+      "usage_patterns": [
+        "68% of recorded calls have no linked notes or follow-up task within 48 hours.",
+        "Teams with more than 10 recorded calls per week show the lowest note-completion rate."
+      ],
+      "drop_off_rates": {
+        "calls_without_followup_notes_pct": 68
+      },
+      "session_info": {
+        "avg_recorded_call_minutes": 34,
+        "recorded_calls_per_week_median": 12
+      },
+      "accessibility_signals": [
+        "No direct accessibility signals identified for this feature area."
+      ],
+      "trends": [
+        "Recorded call volume has grown 40% year-over-year, increasing the manual note-taking burden."
+      ],
+      "data_limitations": [
+        "Missing follow-up notes could reflect note-taking happening outside the product (e.g., in email or a separate tool), not necessarily a lack of need.",
+        "The analytics system cannot verify note quality, only presence or absence of a linked note."
+      ]
+    },
+    "onboarding": {
+      "aliases": ["onboarding", "onboarding process", "new user onboarding", "setup flow"],
+      "metric_area": "new account activation funnel",
+      "usage_patterns": [
+        "Only 44% of new accounts complete core setup within the first 7 days.",
+        "Accounts that don't complete setup within 7 days churn at 3x the rate of those that do."
+      ],
+      "drop_off_rates": {
+        "setup_incomplete_after_7_days_pct": 56,
+        "step_2_of_5_dropoff_pct": 27
+      },
+      "session_info": {
+        "median_time_to_first_value_hours": 41,
+        "support_tickets_per_new_account_first_week": 1.8
+      },
+      "accessibility_signals": [
+        "No direct accessibility signals identified for this feature area."
+      ],
+      "trends": [
+        "Setup completion rate has been flat for three consecutive quarters despite other product improvements."
+      ],
+      "data_limitations": [
+        "The funnel data shows where users drop off but not definitively why - qualitative research would be needed to confirm root cause.",
+        "Some 'incomplete setup' accounts may be low-intent trials rather than genuinely blocked users."
+      ]
+    },
+    "export_pdf": {
+      "aliases": ["export to pdf", "pdf export", "export report", "download pdf"],
+      "metric_area": "report sharing and print usage",
+      "usage_patterns": [
+        "The browser print dialog is triggered from report pages roughly 900 times per month.",
+        "CSV export is used 3x more often than print, suggesting demand for offline formats generally."
+      ],
+      "drop_off_rates": {
+        "print_dialog_abandonment_pct": 22
+      },
+      "session_info": {
+        "monthly_print_dialog_opens": 900,
+        "monthly_csv_exports": 2700
+      },
+      "accessibility_signals": [
+        "No direct accessibility signals identified for this feature area."
+      ],
+      "trends": [
+        "Print dialog usage from report pages has been stable for two quarters."
+      ],
+      "data_limitations": [
+        "Print dialog usage is a proxy signal for offline/sharing demand, not direct evidence that a formatted PDF export is required.",
+        "The analytics system cannot tell whether print attempts succeeded or produced usable output."
+      ]
+    }
+  }
+}

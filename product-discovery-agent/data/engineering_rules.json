@@ -1,0 +1,82 @@
+{
+  "_meta": {
+    "description": "Predefined local rules used to produce relative, teaching-purpose engineering effort estimates for the Product Discovery Agent demo. These are NOT real engineering commitments or production estimates.",
+    "synthetic": true
+  },
+  "features": {
+    "dark_mode": {
+      "aliases": ["dark mode", "dark theme", "night mode"],
+      "effort_level": "Medium",
+      "expected_work": [
+        "Introduce a theming layer (design tokens/CSS variables) if one does not already exist.",
+        "Audit all components, charts, and third-party widgets for hardcoded colors.",
+        "Add a theme toggle and persist user preference.",
+        "Re-test contrast ratios for accessibility compliance in the new theme."
+      ],
+      "dependencies": ["Design system / token infrastructure", "Charting library theme support"],
+      "risks": ["Third-party embedded widgets may not support theming, creating visual inconsistency.", "Scope can silently expand if many legacy components have hardcoded styles."],
+      "testing_requirements": ["Visual regression testing across both themes", "Accessibility contrast checks (WCAG AA)", "Cross-browser and cross-device spot checks"],
+      "confidence": "Medium",
+      "platforms_note": "Effort increases if both web and native mobile clients must be themed consistently."
+    },
+    "mobile_app": {
+      "aliases": ["mobile app", "mobile application", "ios app", "android app"],
+      "effort_level": "High",
+      "expected_work": [
+        "Stand up native (or cross-platform) mobile codebase and CI/CD pipeline.",
+        "Design mobile-specific navigation and a reduced feature set for v1.",
+        "Implement authentication, offline caching, and push notifications.",
+        "Establish app store review and release processes."
+      ],
+      "dependencies": ["Public/stable API surface for mobile clients", "Push notification infrastructure", "App store developer accounts"],
+      "risks": ["App store review timelines are outside the team's direct control.", "Maintaining feature parity across web and mobile increases long-term maintenance cost.", "Native mobile requires ongoing OS-version compatibility work."],
+      "testing_requirements": ["Device/OS compatibility matrix testing", "Offline and poor-connectivity testing", "App store compliance review"],
+      "confidence": "Medium",
+      "platforms_note": "A scoped 'lite' app (e.g., approvals and alerts only) is meaningfully lower effort than a full-feature native rebuild."
+    },
+    "ai_meeting_summary": {
+      "aliases": ["ai meeting summary", "meeting summaries", "meeting notes", "ai summarization"],
+      "effort_level": "Medium",
+      "expected_work": [
+        "Integrate a transcription and summarization model/service.",
+        "Build a review/edit UI so users can correct AI-generated summaries.",
+        "Design data retention and deletion policy for transcripts.",
+        "Wire summaries into existing task/follow-up workflows."
+      ],
+      "dependencies": ["Call recording/transcription pipeline", "LLM or summarization API access", "Data retention policy sign-off from legal/privacy"],
+      "risks": ["Summarization accuracy varies by audio quality and speaker overlap.", "Storing transcripts introduces new privacy and compliance obligations.", "Users may over-trust AI summaries without reviewing them."],
+      "testing_requirements": ["Summary accuracy spot checks against human-written notes", "Data handling / retention policy review", "Opt-in/consent flow testing"],
+      "confidence": "Low",
+      "platforms_note": "Effort estimate assumes an existing call-recording pipeline; effort would be High if recording infrastructure must also be built."
+    },
+    "onboarding": {
+      "aliases": ["onboarding", "onboarding process", "new user onboarding", "setup flow"],
+      "effort_level": "Low",
+      "expected_work": [
+        "Design a step-by-step checklist with progress tracking.",
+        "Add contextual tooltips or a guided product tour for first-run.",
+        "Instrument analytics events per onboarding step to measure drop-off.",
+        "Write updated help-center content aligned to the new flow."
+      ],
+      "dependencies": ["Existing analytics/event tracking infrastructure"],
+      "risks": ["Poorly tuned tooltips can feel intrusive and hurt experience if over-used.", "Checklist can go stale if not updated as the product evolves."],
+      "testing_requirements": ["New-user usability testing", "A/B test of checklist vs. current flow", "Analytics validation of step-level tracking"],
+      "confidence": "High",
+      "platforms_note": "Effort is largely UI/UX and instrumentation work; low dependency on backend changes."
+    },
+    "export_pdf": {
+      "aliases": ["export to pdf", "pdf export", "export report", "download pdf"],
+      "effort_level": "Low",
+      "expected_work": [
+        "Add a server-side or client-side PDF rendering step for existing report views.",
+        "Apply consistent branding/layout template to exported PDFs.",
+        "Add an export button and background job status indicator for larger reports."
+      ],
+      "dependencies": ["Existing report data/view layer"],
+      "risks": ["Complex charts or tables may not render cleanly in PDF format without extra layout work.", "Large reports could require async/background generation to avoid timeouts."],
+      "testing_requirements": ["Visual QA of PDF layout across report types", "Performance testing for large report exports"],
+      "confidence": "High",
+      "platforms_note": "Effort is similar across web platforms; native mobile export is out of scope for this estimate."
+    }
+  }
+}

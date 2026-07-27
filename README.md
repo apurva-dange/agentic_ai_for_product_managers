@@ -13,6 +13,12 @@ I believe successful Agentic AI products are built on three pillars:
 * **Trust Through Reliability:** User adoption is 100% dependent on the agent's reliability. This means focusing on guardrails, validation, and clear error handling from day one.
 * **Rapid, Data-Driven Iteration:** Building an agent is a process of discovery. My approach centers on launching a minimal viable agent (MVA), defining the right success KPIs, and iterating relentlessly.
 
+## 🧩 Portfolio Projects
+
+Hands-on projects that put the philosophy above into practice:
+
+* **[Product Discovery Agent](product-discovery-agent/)** - A local, explainable AI agent that evaluates a feature idea (e.g. "Should we build dark mode?") by planning what evidence it needs, calling tools to gather customer feedback, usage analytics, competitor research, engineering effort, and risk data, and only then producing a structured recommendation. Built to demonstrate the full agentic tool-use loop (`tool_use` → execute → observe → continue → `end_turn`), including deliberate bug-mode demonstrations of what goes wrong when message history or stopping conditions are implemented incorrectly. Runs with no API key required. See its [README](product-discovery-agent/README.md) for details.
+
 ## 🗓️ What's Coming Next
 
 This repository is actively maintained. Here is a preview of topics I'll be adding soon:

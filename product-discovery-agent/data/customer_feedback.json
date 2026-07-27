@@ -1,0 +1,75 @@
+{
+  "_meta": {
+    "description": "Synthetic customer feedback records for the Product Discovery Agent demo. All names, companies, and quotes are fabricated for teaching purposes only.",
+    "synthetic": true
+  },
+  "features": {
+    "dark_mode": {
+      "aliases": ["dark mode", "dark theme", "night mode"],
+      "records": [
+        {"id": "FB-DM-001", "segment": "enterprise", "date": "2026-02-03", "comment": "Our night-shift analysts stare at this dashboard for hours. A dark theme would reduce eye strain considerably.", "pain_point": "eye strain during long sessions"},
+        {"id": "FB-DM-002", "segment": "enterprise", "date": "2026-03-11", "comment": "Please add dark mode. Half our SOC team works overnight and the bright UI is rough on the eyes.", "pain_point": "eye strain during night shifts"},
+        {"id": "FB-DM-003", "segment": "smb", "date": "2026-01-19", "comment": "Small thing, but a dark mode toggle would be nice for late-night bookkeeping sessions.", "pain_point": "eye strain in low light"},
+        {"id": "FB-DM-004", "segment": "individual", "date": "2026-04-02", "comment": "Every other app I use has dark mode, this one feels dated without it.", "pain_point": "feature parity expectation"},
+        {"id": "FB-DM-005", "segment": "enterprise", "date": "2026-02-27", "comment": "Battery drain on OLED laptops is noticeably worse with the current bright theme during travel.", "pain_point": "battery consumption"},
+        {"id": "FB-DM-006", "segment": "individual", "date": "2026-03-30", "comment": "I use the product mostly at night and the white background is jarring in a dark room.", "pain_point": "eye strain in low light"},
+        {"id": "FB-DM-007", "segment": "smb", "date": "2026-01-08", "comment": "Would love dark mode, several of us have light sensitivity and the current UI is uncomfortable.", "pain_point": "accessibility / light sensitivity"},
+        {"id": "FB-DM-008", "segment": "enterprise", "date": "2026-04-15", "comment": "Our accessibility office flagged the bright UI as a concern for staff with migraines. Dark mode was suggested as a mitigation.", "pain_point": "accessibility / migraine sensitivity"},
+        {"id": "FB-DM-009", "segment": "individual", "date": "2026-02-11", "comment": "Not urgent, but a dark theme would make the evening review workflow more pleasant.", "pain_point": "general comfort"},
+        {"id": "FB-DM-010", "segment": "smb", "date": "2026-03-22", "comment": "Requesting dark mode again - came up in our team retro as the top requested cosmetic feature.", "pain_point": "feature parity expectation"}
+      ],
+      "total_matching_requests": 42,
+      "segment_frequency": {"enterprise": 19, "smb": 14, "individual": 9}
+    },
+    "mobile_app": {
+      "aliases": ["mobile app", "mobile application", "ios app", "android app"],
+      "records": [
+        {"id": "FB-MA-001", "segment": "individual", "date": "2026-02-14", "comment": "I need to approve requests while away from my desk. A mobile app would let me do quick approvals on the go.", "pain_point": "no on-the-go access"},
+        {"id": "FB-MA-002", "segment": "smb", "date": "2026-03-05", "comment": "Our field technicians can't access the tool without a laptop. A mobile app would fix that gap.", "pain_point": "no field access"},
+        {"id": "FB-MA-003", "segment": "enterprise", "date": "2026-01-27", "comment": "The mobile web experience is unusable on our tablets. We need a native app for warehouse staff.", "pain_point": "poor mobile web experience"},
+        {"id": "FB-MA-004", "segment": "individual", "date": "2026-04-01", "comment": "Would use a mobile app daily just for quick status checks between meetings.", "pain_point": "no on-the-go access"},
+        {"id": "FB-MA-005", "segment": "enterprise", "date": "2026-02-19", "comment": "Push notifications for urgent alerts would be a game changer, currently we rely on email which is too slow.", "pain_point": "slow alerting"},
+        {"id": "FB-MA-006", "segment": "smb", "date": "2026-03-28", "comment": "Not a dealbreaker for us, mobile web is fine most days.", "pain_point": "minor convenience"}
+      ],
+      "total_matching_requests": 27,
+      "segment_frequency": {"enterprise": 11, "smb": 9, "individual": 7}
+    },
+    "ai_meeting_summary": {
+      "aliases": ["ai meeting summary", "meeting summaries", "meeting notes", "ai summarization"],
+      "records": [
+        {"id": "FB-MS-001", "segment": "enterprise", "date": "2026-03-02", "comment": "We record dozens of customer calls a week and nobody has time to write summaries. AI summaries would save hours.", "pain_point": "manual note-taking overhead"},
+        {"id": "FB-MS-002", "segment": "smb", "date": "2026-02-21", "comment": "Would love auto-generated action items after each meeting, we keep losing track of follow-ups.", "pain_point": "lost action items"},
+        {"id": "FB-MS-003", "segment": "enterprise", "date": "2026-04-05", "comment": "Our PMs spend an hour after every planning meeting writing recap notes. Automating this would be huge.", "pain_point": "manual note-taking overhead"},
+        {"id": "FB-MS-004", "segment": "individual", "date": "2026-01-30", "comment": "I'd like a quick bullet-point summary emailed to me after calls I miss.", "pain_point": "missed meeting context"},
+        {"id": "FB-MS-005", "segment": "enterprise", "date": "2026-03-17", "comment": "Concerned about where transcripts get stored, but the summarization concept itself is appealing.", "pain_point": "manual note-taking overhead / data handling concern"}
+      ],
+      "total_matching_requests": 33,
+      "segment_frequency": {"enterprise": 20, "smb": 8, "individual": 5}
+    },
+    "onboarding": {
+      "aliases": ["onboarding", "onboarding process", "new user onboarding", "setup flow"],
+      "records": [
+        {"id": "FB-OB-001", "segment": "smb", "date": "2026-02-08", "comment": "Took our team almost two weeks to fully configure the product. The initial setup steps are confusing.", "pain_point": "long time-to-value"},
+        {"id": "FB-OB-002", "segment": "individual", "date": "2026-01-14", "comment": "I almost gave up during setup, there's no guidance on what to do first.", "pain_point": "lack of guided setup"},
+        {"id": "FB-OB-003", "segment": "enterprise", "date": "2026-03-25", "comment": "New hires need a full day of hand-holding just to get started. A guided walkthrough would help a lot.", "pain_point": "high support burden during onboarding"},
+        {"id": "FB-OB-004", "segment": "smb", "date": "2026-04-09", "comment": "We didn't discover the reporting feature until month two because nothing pointed us to it during setup.", "pain_point": "low feature discoverability"},
+        {"id": "FB-OB-005", "segment": "individual", "date": "2026-02-22", "comment": "The empty dashboard on day one was confusing, I didn't know where to start.", "pain_point": "confusing first-run experience"},
+        {"id": "FB-OB-006", "segment": "enterprise", "date": "2026-01-05", "comment": "Our onboarding specialist has to walk every new account through the same manual steps. This should be self-serve.", "pain_point": "high support burden during onboarding"},
+        {"id": "FB-OB-007", "segment": "smb", "date": "2026-03-14", "comment": "Requesting a checklist or progress tracker for setup, right now it's unclear what's left to configure.", "pain_point": "lack of guided setup"}
+      ],
+      "total_matching_requests": 38,
+      "segment_frequency": {"enterprise": 12, "smb": 16, "individual": 10}
+    },
+    "export_pdf": {
+      "aliases": ["export to pdf", "pdf export", "export report", "download pdf"],
+      "records": [
+        {"id": "FB-PD-001", "segment": "enterprise", "date": "2026-02-17", "comment": "We need to share monthly reports with leadership who don't have product access. PDF export would solve this.", "pain_point": "no offline sharing format"},
+        {"id": "FB-PD-002", "segment": "smb", "date": "2026-03-09", "comment": "Our accountant asks for a PDF copy of the invoice summary every month, currently we screenshot everything.", "pain_point": "manual workaround for sharing"},
+        {"id": "FB-PD-003", "segment": "individual", "date": "2026-01-23", "comment": "Would like to print a clean PDF version of my report instead of the messy browser print output.", "pain_point": "poor print formatting"},
+        {"id": "FB-PD-004", "segment": "enterprise", "date": "2026-04-11", "comment": "Compliance requires us to archive signed-off reports as PDF. Right now we use a third-party converter.", "pain_point": "compliance archiving requirement"}
+      ],
+      "total_matching_requests": 21,
+      "segment_frequency": {"enterprise": 10, "smb": 7, "individual": 4}
+    }
+  }
+}

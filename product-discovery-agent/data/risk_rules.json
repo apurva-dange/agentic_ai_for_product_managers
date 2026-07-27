@@ -1,0 +1,43 @@
+{
+  "_meta": {
+    "description": "Predefined local rules used to flag possible risk and compliance considerations for the Product Discovery Agent demo. These are teaching examples, not a substitute for legal, security, or compliance review.",
+    "synthetic": true
+  },
+  "features": {
+    "dark_mode": {
+      "aliases": ["dark mode", "dark theme", "night mode"],
+      "risks": [
+        {"category": "accessibility", "level": "Low", "reason": "New theme must maintain WCAG AA contrast ratios; risk of regressions if not tested.", "recommended_review": "Accessibility/design QA pass on both themes", "human_approval_required": false}
+      ]
+    },
+    "mobile_app": {
+      "aliases": ["mobile app", "mobile application", "ios app", "android app"],
+      "risks": [
+        {"category": "security", "level": "Medium", "reason": "New client introduces additional attack surface (local storage, device auth, API tokens on device).", "recommended_review": "Security review of mobile auth and local data storage", "human_approval_required": true},
+        {"category": "privacy", "level": "Medium", "reason": "Push notifications and device permissions may collect additional device-level data.", "recommended_review": "Privacy review of data collected via mobile SDKs", "human_approval_required": true},
+        {"category": "operational", "level": "Medium", "reason": "App store review and update cycles add an external dependency to release timelines.", "recommended_review": "Release process planning with mobile platform teams", "human_approval_required": false}
+      ]
+    },
+    "ai_meeting_summary": {
+      "aliases": ["ai meeting summary", "meeting summaries", "meeting notes", "ai summarization"],
+      "risks": [
+        {"category": "privacy", "level": "High", "reason": "Call recordings and transcripts may contain sensitive customer or personal information.", "recommended_review": "Legal/privacy review of transcript storage, retention, and deletion policy", "human_approval_required": true},
+        {"category": "security", "level": "Medium", "reason": "Transcripts sent to a third-party summarization model introduce data-sharing considerations.", "recommended_review": "Security review of any third-party AI processing vendor", "human_approval_required": true},
+        {"category": "customer_trust", "level": "Medium", "reason": "Users may not realize calls are being summarized by AI unless clearly disclosed.", "recommended_review": "Consent/disclosure UX review", "human_approval_required": true}
+      ]
+    },
+    "onboarding": {
+      "aliases": ["onboarding", "onboarding process", "new user onboarding", "setup flow"],
+      "risks": [
+        {"category": "operational", "level": "Low", "reason": "Changes to the first-run experience can affect activation metrics broadly if misconfigured.", "recommended_review": "Staged rollout with activation-metric monitoring", "human_approval_required": false}
+      ]
+    },
+    "export_pdf": {
+      "aliases": ["export to pdf", "pdf export", "export report", "download pdf"],
+      "risks": [
+        {"category": "legal", "level": "Low", "reason": "Exported documents may be treated as official records depending on customer use case.", "recommended_review": "Confirm export disclaimers/branding meet compliance expectations for regulated customers", "human_approval_required": false},
+        {"category": "security", "level": "Low", "reason": "Exported files leaving the platform are no longer covered by in-app access controls.", "recommended_review": "Confirm export permissions align with existing data-access roles", "human_approval_required": false}
+      ]
+    }
+  }
+}
