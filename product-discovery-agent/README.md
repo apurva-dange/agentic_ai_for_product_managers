@@ -92,7 +92,6 @@ unlike the free, deterministic modes above.
 - [Limitations](#limitations)
 - [Future improvements](#future-improvements)
 - [Metrics for future real-world evaluation](#metrics-for-future-real-world-evaluation)
-- [Interview talking points](#interview-talking-points)
 - [Portfolio Case Study](#portfolio-case-study)
 - [What I learned](#what-i-learned)
 
