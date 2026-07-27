@@ -1,0 +1,23 @@
+flowchart TD
+    User([User: product question]) --> Coordinator[Product Discovery Coordinator]
+    Coordinator --> Decomposer[Task Decomposer\nbuilds TaskPlan]
+    Decomposer --> ContextBuilder[Context Package Builder\nisolated per task]
+
+    ContextBuilder --> Customer[Customer Insights Agent]
+    ContextBuilder --> Market[Market Research Agent]
+    ContextBuilder --> Technical[Technical Feasibility Agent]
+    ContextBuilder --> Risk[Risk and Metrics Agent]
+
+    Customer --> Results[(Subagent Results)]
+    Market --> Results
+    Technical --> Results
+    Risk --> Results
+
+    Results --> Validator[Result Validator\ndowngrades incomplete results]
+    Validator --> Aggregator[Aggregation and Gap Analysis\nResultAggregator]
+    Aggregator --> Brief[Final Product Decision Brief]
+
+    Decomposer -.->|may skip an agent, e.g. Market Research\nfor a low-risk copy change| ContextBuilder
+
+    classDef spoke fill:#2b6cb0,color:#fff,stroke:#1a4971;
+    class Customer,Market,Technical,Risk spoke;

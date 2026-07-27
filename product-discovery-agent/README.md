@@ -45,6 +45,17 @@ python app.py --scenario dark-mode
 
 No API key, database, or network access required.
 
+**Module 2 (new):** the same question can also be run through a
+**hub-and-spoke coordinator** that delegates customer, market, technical, and
+risk research to four isolated specialist subagents and aggregates their
+findings into one decision brief:
+
+```bash
+python app.py --mode coordinator --scenario dark-mode
+```
+
+See [Module 2: Hub-and-Spoke Product Discovery](#module-2-hub-and-spoke-product-discovery) below.
+
 ---
 
 ## Table of contents
@@ -56,14 +67,18 @@ No API key, database, or network access required.
 - [Architecture](#architecture)
 - [Example workflow: dark mode, start to finish](#example-workflow-dark-mode-start-to-finish)
 - [Failure scenarios](#failure-scenarios)
+- [Module 2: Hub-and-Spoke Product Discovery](#module-2-hub-and-spoke-product-discovery)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Testing](#testing)
+- [Evaluation](#evaluation)
 - [Example output](#example-output)
 - [Product-management value](#product-management-value)
 - [Limitations](#limitations)
 - [Future improvements](#future-improvements)
+- [Metrics for future real-world evaluation](#metrics-for-future-real-world-evaluation)
 - [Interview talking points](#interview-talking-points)
+- [Portfolio Case Study](#portfolio-case-study)
 - [What I learned](#what-i-learned)
 
 ## Project overview
@@ -213,6 +228,145 @@ All of these are runnable, not theoretical:
 | Maximum iteration protection | `python app.py --scenario dark-mode --max-iterations 2` | The evidence plan needs five iterations to complete; capping it at 2 forces the loop to stop with `max_iterations_reached` instead of running forever. |
 | Insufficient evidence | `python app.py --scenario unknown-feature` | The question doesn't match any feature in the synthetic datasets, so every tool call fails after a retry. The recommendation is `Insufficient evidence` / `Low` confidence. |
 
+## Module 2: Hub-and-Spoke Product Discovery
+
+Module 1 shows how **one agent** completes a multi-step task by looping on
+tool calls. Module 2 shows how a **coordinator** manages **multiple
+specialist subagents** that each own one slice of a product decision -
+customer demand, market positioning, technical feasibility, and risk/metrics
+- and never talk to each other directly.
+
+```bash
+python app.py --mode coordinator --scenario dark-mode
+```
+
+### What the hub-and-spoke model is
+
+A hub-and-spoke architecture has one central coordinator (the hub) and
+several independent specialists (the spokes) that only communicate through
+the hub, never with each other. The coordinator decides *what* work is
+needed and *who* does it; each specialist only knows its own narrow task.
+
+### Why the coordinator is the hub
+
+`ProductDiscoveryCoordinator` ([src/coordinator/coordinator.py](src/coordinator/coordinator.py))
+is the only component that sees the whole picture: it decomposes the
+question, builds each subagent's context, invokes them, validates what comes
+back, and aggregates it into one brief. No subagent can see another
+subagent's result or call another subagent directly - every result flows
+back through the coordinator first.
+
+### Why specialist agents are the spokes
+
+Each spoke ([src/subagents/](src/subagents/)) owns one evidence category and
+is authorized to call exactly one or two of Module 1's existing tools -
+never all five:
+
+| Subagent | Authorized tool(s) | Cannot use |
+|---|---|---|
+| Customer Insights | `customer_feedback_search`, `product_analytics_lookup` | engineering estimator, competitor research, risk checker |
+| Market Research | `competitor_research` | customer feedback, engineering estimator, risk checker |
+| Technical Feasibility | `engineering_effort_estimator` | customer feedback, competitor research, risk checker |
+| Risk and Metrics | `risk_compliance_checker` | customer feedback, competitor research, engineering estimator |
+
+Calling an unauthorized tool raises a structured `ToolNotAuthorizedError`
+([src/subagents/base.py](src/subagents/base.py)) instead of silently
+succeeding or crashing - see [tests/test_subagent_tool_scoping.py](tests/test_subagent_tool_scoping.py).
+
+### How the coordinator decomposes work
+
+`TaskDecomposer` ([src/coordinator/task_decomposer.py](src/coordinator/task_decomposer.py))
+always creates a Customer Insights task (every feature decision needs demand
+evidence) and always creates Technical Feasibility and Risk/Metrics tasks,
+but **skips Market Research** for low-risk copy/wording changes - the
+coordinator does not blindly invoke all four agents every time:
+
+```bash
+python app.py --mode coordinator --scenario onboarding-copy --show-task-plan
+```
+
+### How context is passed explicitly
+
+`ContextPackageBuilder` ([src/coordinator/context_builder.py](src/coordinator/context_builder.py))
+builds a different, narrow `ContextPackage` per task. The Customer Insights
+agent gets `target_users` and a `known_problem` string but no `platforms`;
+the Technical Feasibility agent gets `platforms` but no customer data. Run
+this to see it directly:
+
+```bash
+python app.py --mode coordinator --scenario dark-mode --show-subagent-context
+```
+
+```text
+Customer Insights Agent received:
+- Feature: dark mode
+- Target users: ['Enterprise users', 'SMB users', 'Individual users']
+- Known customer problem: Some users report eye strain during evening sessions.
+- Customer feedback + product analytics data access
+Customer Insights Agent did not receive:
+- Competitor research data
+- Engineering rules data
+- Risk and compliance rules data
+- Results from other agents
+- Coordinator internal history
+```
+
+### Why subagents do not inherit coordinator memory
+
+`ContextPackage` ([src/coordinator/models.py](src/coordinator/models.py)) has
+no field for "coordinator history" or "other agents' results" - structurally,
+not just by convention, so there is nothing to accidentally leak. A subagent
+only ever sees its task, its context package, and its authorized tools (see
+[tests/test_context_isolation.py](tests/test_context_isolation.py)).
+
+### How results are aggregated
+
+`ResultValidator` ([src/coordinator/result_validator.py](src/coordinator/result_validator.py))
+downgrades a result to `partial` if required fields are missing, and strips
+any data a `failed` result tries to smuggle in (no fabricated findings).
+`ResultAggregator` ([src/coordinator/result_aggregator.py](src/coordinator/result_aggregator.py))
+then combines the validated results into one `DecisionBrief` - explainable,
+rule-based confidence and recommendation logic, not an average of four
+separate opinions. It also detects simple contradictions (e.g. high customer
+demand alongside high engineering effort) and surfaces them instead of
+quietly picking a side.
+
+### How failures affect confidence
+
+| Failure mode | Command | Coordinator behavior |
+|---|---|---|
+| Subagent execution failure | `python app.py --mode coordinator --scenario dark-mode --failure-agent market_research` | Failure recorded, no fabricated competitor data, other agents' results still used, confidence reduced, `market_research` listed in `failed_agents`. |
+| Missing required context | `python app.py --mode coordinator --scenario dark-mode --missing-context-agent technical_feasibility` | `MissingContextError("platforms")` raised, coordinator supplies a safe fallback platform list and retries once (recorded as a `retry_attempted` event); only fails permanently if no safe fallback exists. |
+| Unregistered/unknown agent | test-only, via dependency injection - see [tests/test_coordinator_failures.py](tests/test_coordinator_failures.py) | Structured `UnknownAgentError`, no crash; the run stops safely if the missing agent was critical, or continues if it wasn't. |
+| All subagents fail | `python app.py --mode coordinator --scenario unknown-feature` | `recommendation: "Insufficient evidence"`, `confidence: "Low"`, `human_decision_required: true`. |
+
+### How incomplete output is diagnosed
+
+Every result carries `status` (`success` / `partial` / `failed` / `skipped`),
+`limitations`, and `missing_information`. The aggregator turns these directly
+into the brief's `evidence_gaps` list, so a reader can see *exactly* which
+agent came up short and why - never a silent gap.
+
+### How Module 2 builds on Module 1
+
+The coordinator reuses Module 1's tools, feature resolution
+(`agent.resolve_feature`), and platform/risk-context lookups
+(`mock_model.FEATURE_PLATFORMS`, `FEATURE_RISK_CONTEXT`) directly - nothing
+about evidence gathering was rebuilt from scratch. Module 1's agentic loop
+(`src/loop.py`, `src/agent.py`) is completely untouched and still runs via
+`--mode single-agent` (the default).
+
+| Module 1 | Module 2 |
+|---|---|
+| One agent | Coordinator with specialist agents |
+| One message history | Coordinator event trace + per-task context packages |
+| Tool selection inside one loop | Task delegation across agents |
+| Single-agent failure handling | Partial subagent failure handling |
+| One final response | Aggregated multi-agent decision brief |
+
+Full architecture diagrams (flowchart, sequence diagram, and a failure-path
+diagram) are in [docs/architecture.md](docs/architecture.md).
+
 ## Installation
 
 ```bash
@@ -251,6 +405,18 @@ python app.py --scenario unknown-feature
 # Intentional bug modes (educational comparison)
 python app.py --scenario dark-mode --bug-mode skip-tool-history
 python app.py --scenario dark-mode --bug-mode end-too-early
+
+# --- Module 2: hub-and-spoke coordinator ---
+
+python app.py --mode coordinator --scenario dark-mode
+python app.py --mode coordinator --scenario mobile-app
+python app.py --mode coordinator --scenario dark-mode --show-subagent-context
+python app.py --mode coordinator --scenario dark-mode --show-task-plan
+python app.py --mode coordinator --scenario onboarding-copy --show-task-plan   # Market Research is skipped
+python app.py --mode coordinator --scenario dark-mode --failure-agent market_research
+python app.py --mode coordinator --scenario dark-mode --missing-context-agent technical_feasibility
+python app.py --mode coordinator --scenario unknown-feature                   # all subagents fail
+python app.py --mode coordinator --scenario dark-mode --save-trace output/coordinator-trace.json
 ```
 
 Run `python app.py --help` for the full flag list.
@@ -262,10 +428,31 @@ pip install -r requirements.txt
 python -m pytest tests/ -v
 ```
 
-35 tests across five files cover the loop mechanics, structured history,
-all five tools, recommendation schema validation, tool failure/retry
-handling, both bug modes, the iteration cap, unknown stop reasons, and a
-static scan for accidental secrets or sensitive-data patterns.
+82 tests across eleven files. The original 35 (five files) cover Module 1's
+loop mechanics, structured history, all five tools, recommendation schema
+validation, tool failure/retry handling, both bug modes, the iteration cap,
+unknown stop reasons, and a static scan for accidental secrets or
+sensitive-data patterns - **unchanged and still passing**. 47 new tests
+(six files) cover Module 2: task decomposition, context isolation, per-agent
+tool authorization, result validation, retry policy, aggregation/confidence/
+contradiction logic, and full coordinator success/failure/schema/trace-export
+paths.
+
+## Evaluation
+
+```bash
+python evaluate.py
+```
+
+A local, simulated evaluation harness runs the coordinator against 12
+synthetic product questions (including copy-change, unresolvable-feature,
+subagent-failure, and missing-context cases) and checks: schema validity,
+whether the right agents were selected or skipped, whether failure scenarios
+were handled correctly, whether evidence gaps were surfaced, whether success
+metrics were present, and whether any unsupported ("guaranteed", "will
+increase revenue", ...) claims leaked into the output. Every number this
+script prints is a **local simulated evaluation result** on synthetic data -
+not a measurement of real product outcomes.
 
 ## Example output
 
@@ -347,6 +534,11 @@ Structured result (abridged, full version in
 - A real deployment would require live data integrations, monitoring,
   evaluation datasets, security review, and governance well beyond what a
   local demo needs.
+- **Module 2 specifically:** subagents run sequentially, not in parallel
+  (parallel execution is intentionally left for a future module); the retry
+  policy only knows how to recover from one specific missing-context case
+  (a missing `platforms` field); and contradiction detection is a small,
+  hand-written rule set, not a general-purpose reasoning step.
 
 ## Future improvements
 
@@ -364,6 +556,28 @@ Structured result (abridged, full version in
 - Add confidence calibration informed by how often past recommendations at
   a given confidence level turned out to be right.
 - Add a lightweight web interface on top of the same agent/loop code.
+- Add parallel subagent execution now that the sequential hub-and-spoke
+  structure is in place (a natural Module 3).
+- Broaden the retry policy beyond the one missing-context case it currently
+  handles, and add a real transient-vs-permanent failure classifier.
+
+## Metrics for future real-world evaluation
+
+The metrics below describe how this approach *could* eventually be evaluated
+against a real product-management workflow. None of these have been
+measured - there is no real usage to measure yet - and nothing here should
+be read as a claim that they have already improved.
+
+- Time required to prepare a feature decision brief, with vs. without the
+  coordinator.
+- Percentage of expected evidence categories included in each brief.
+- Number of missing evidence gaps correctly detected vs. missed.
+- Number of unsupported claims found in generated briefs.
+- Number of subagent failures handled correctly (no crash, no fabrication).
+- Product manager review score (would this brief have changed a real
+  decision, and was it trusted?).
+- Recommendation consistency across repeated runs of the same question.
+- Percentage of generated briefs that required manual correction before use.
 
 ## Interview talking points
 
@@ -391,6 +605,57 @@ Structured result (abridged, full version in
    recommendation logic actively caps confidence and blocks strong
    recommendations ("Build now") whenever critical evidence (customer
    demand or engineering effort) is missing.
+6. **Context isolation has to be structural, not a promise.** In Module 2,
+   a subagent's `ContextPackage` simply has no field for "other agents'
+   results" or "coordinator history" - it's not that the agent is told not
+   to look, there's nothing there to look at. That's what makes isolation
+   testable ([tests/test_context_isolation.py](tests/test_context_isolation.py))
+   instead of just asserted in a docstring.
+7. **The hub shouldn't average away a critical failure.** The aggregator
+   explicitly checks whether a *critical* agent (customer insights or
+   technical feasibility) failed before computing a score - a strong result
+   from three agents never quietly outvotes one missing critical input.
+8. **Tool scoping is a permission boundary, not a suggestion.** Each
+   subagent's `allowed_tools` is enforced in code (`ToolNotAuthorizedError`),
+   so "the market research agent doesn't use the risk checker" is a fact you
+   can write a test against, not just an intention in a docstring.
+
+## Portfolio Case Study
+
+### Problem
+
+Product feature decisions require evidence from several business and
+technical areas - customer demand, market/competitive context, engineering
+feasibility, and risk - that are usually scattered across different tools,
+teams, and mental models.
+
+### Solution
+
+A coordinator delegates focused research tasks to specialist agents, each
+scoped to one evidence category and one or two tools, and combines their
+validated results into one structured decision brief - including what's
+missing, what contradicts what, and where a human still needs to decide.
+
+### My role
+
+*(Editable - write your own observations here. Nothing below is invented on
+your behalf.)*
+
+- How I defined the workflow:
+- How I selected the specialist roles:
+- How I defined context boundaries:
+- How I designed failure handling:
+- How I evaluated output completeness:
+
+### What this project demonstrates
+
+- Multi-agent orchestration (hub-and-spoke, not direct agent-to-agent chat)
+- Task decomposition based on the actual question, not a fixed sequence
+- Explicit, isolated context management per agent
+- Tool scoping and enforced authorization boundaries
+- Partial-failure handling without fabricated evidence
+- Structured, schema-validated output
+- Product decision support (not automated decision-making)
 
 ## What I learned
 
@@ -401,3 +666,6 @@ Structured result (abridged, full version in
 - Why stopping conditions matter:
 - How product requirements affect agent behavior:
 - How I would improve this project for production:
+- What I learned about multi-agent (hub-and-spoke) orchestration:
+- Why explicit context boundaries matter between agents:
+- How I would extend this toward parallel execution (Module 3):

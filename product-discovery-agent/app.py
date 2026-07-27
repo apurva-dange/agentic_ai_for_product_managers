@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Command-line entry point for the Product Discovery Agent.
 
-Examples:
+Module 1 (single-agent, default mode - unchanged):
     python app.py --scenario dark-mode
     python app.py --scenario onboarding --show-history
     python app.py --scenario dark-mode --save-trace output/trace.json
@@ -12,6 +12,18 @@ Examples:
     python app.py --scenario unknown-feature
     python app.py --scenario dark-mode --bug-mode skip-tool-history
     python app.py --scenario dark-mode --bug-mode end-too-early
+    python app.py --mode single-agent --scenario dark-mode   (equivalent to the default)
+
+Module 2 (hub-and-spoke coordinator):
+    python app.py --mode coordinator --scenario dark-mode
+    python app.py --mode coordinator --scenario mobile-app
+    python app.py --mode coordinator --scenario dark-mode --show-subagent-context
+    python app.py --mode coordinator --scenario dark-mode --show-task-plan
+    python app.py --mode coordinator --scenario dark-mode --failure-agent market_research
+    python app.py --mode coordinator --scenario dark-mode --missing-context-agent technical_feasibility
+    python app.py --mode coordinator --scenario dark-mode --save-trace output/coordinator-trace.json
+    python app.py --mode coordinator --scenario onboarding --show-task-plan   (market_research is skipped)
+    python app.py --mode coordinator --scenario unknown-feature              (all agents fail)
 """
 
 from __future__ import annotations
@@ -24,6 +36,8 @@ SRC_DIR = Path(__file__).resolve().parent / "src"
 sys.path.insert(0, str(SRC_DIR))
 
 from agent import DEFAULT_MAX_ITERATIONS, BugMode, ProductDiscoveryAgent, RunConfig  # noqa: E402
+from coordinator.coordinator import CoordinatorRunConfig, ProductDiscoveryCoordinator  # noqa: E402
+from coordinator.models import SubagentName  # noqa: E402
 from models import EvidenceType  # noqa: E402
 
 SCENARIOS: dict[str, str] = {
@@ -33,9 +47,14 @@ SCENARIOS: dict[str, str] = {
     "onboarding": "Should we improve the onboarding process?",
     "export-pdf": "Should we add an export-to-PDF feature?",
     "unknown-feature": "Should we add blockchain loyalty rewards to the platform?",
+    # Coordinator-mode only: a small copy/wording change, used to demonstrate
+    # that the Market Research agent is deliberately skipped (not invoked)
+    # rather than always running all four subagents.
+    "onboarding-copy": "Should we change the onboarding copy?",
 }
 
 DEMO_FAILURE_CHOICES = [e.value for e in EvidenceType]
+SUBAGENT_CHOICES = [n.value for n in SubagentName]
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -55,43 +74,76 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--mode",
+        choices=["single-agent", "coordinator"],
+        default="single-agent",
+        help="single-agent (default, Module 1) or coordinator (Module 2 hub-and-spoke).",
+    )
+
+    single_agent_group = parser.add_argument_group("single-agent mode options (Module 1)")
+    single_agent_group.add_argument(
         "--bug-mode",
         choices=[m.value for m in BugMode if m != BugMode.NONE],
         default=None,
         help="Run an intentionally-broken version of the loop for educational comparison.",
     )
-    parser.add_argument(
+    single_agent_group.add_argument(
         "--demo-failure",
         choices=DEMO_FAILURE_CHOICES,
         default=None,
         help="Force the first attempt at this evidence type to fail (demonstrates retry-then-recover).",
     )
-    parser.add_argument(
+    single_agent_group.add_argument(
         "--demo-unknown-stop-reason",
         action="store_true",
         help="Force the mock model to return an unsupported stop_reason on iteration 2.",
     )
-    parser.add_argument(
+    single_agent_group.add_argument(
         "--max-iterations",
         type=int,
         default=DEFAULT_MAX_ITERATIONS,
         help=f"Cap on loop iterations (default: {DEFAULT_MAX_ITERATIONS}). Set low (e.g. 2) to demo the iteration cap.",
     )
-    parser.add_argument(
+    single_agent_group.add_argument(
         "--show-history",
         action="store_true",
         help="Print the full structured message history trace at the end of the run.",
     )
+
+    coordinator_group = parser.add_argument_group("coordinator mode options (Module 2)")
+    coordinator_group.add_argument(
+        "--show-subagent-context",
+        action="store_true",
+        help="Print exactly what context each subagent received (and did not receive).",
+    )
+    coordinator_group.add_argument(
+        "--show-task-plan",
+        action="store_true",
+        help="Print the coordinator's task decomposition plan (also shown by default; kept for explicit scripting).",
+    )
+    coordinator_group.add_argument(
+        "--failure-agent",
+        choices=SUBAGENT_CHOICES,
+        default=None,
+        help="Force this subagent to raise an unhandled execution failure (spec scenario 15.1).",
+    )
+    coordinator_group.add_argument(
+        "--missing-context-agent",
+        choices=["technical_feasibility"],
+        default=None,
+        help="Force the named agent's context package to be built without its required field (spec scenario 15.2).",
+    )
+
     parser.add_argument(
         "--save-trace",
         metavar="PATH",
         default=None,
-        help="Save the complete message history trace as JSON to this path.",
+        help="Save the complete trace as JSON (message history in single-agent mode, event trace in coordinator mode).",
     )
     parser.add_argument(
         "--quiet",
         action="store_true",
-        help="Suppress the step-by-step loop trace (still prints the final recommendation).",
+        help="Suppress the step-by-step trace (still prints the final recommendation/brief).",
     )
     return parser
 
@@ -105,12 +157,7 @@ def get_question() -> str:
     return question
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = build_parser()
-    args = parser.parse_args(argv)
-
-    question = SCENARIOS[args.scenario] if args.scenario else get_question()
-
+def run_single_agent(args: argparse.Namespace, question: str) -> None:
     demo_failure_target = EvidenceType(args.demo_failure) if args.demo_failure else None
     bug_mode = BugMode(args.bug_mode) if args.bug_mode else BugMode.NONE
     force_unknown_stop_at = 2 if args.demo_unknown_stop_reason else None
@@ -134,6 +181,39 @@ def main(argv: list[str] | None = None) -> int:
     if args.save_trace:
         saved_path = result.history.save_trace(args.save_trace)
         print(f"\nTrace saved to: {saved_path}")
+
+
+def run_coordinator(args: argparse.Namespace, question: str) -> None:
+    failure_agent = SubagentName(args.failure_agent) if args.failure_agent else None
+    missing_context_agent = SubagentName(args.missing_context_agent) if args.missing_context_agent else None
+
+    config = CoordinatorRunConfig(
+        question=question,
+        failure_agent=failure_agent,
+        missing_context_agent=missing_context_agent,
+        show_subagent_context=args.show_subagent_context,
+        show_task_plan=args.show_task_plan,
+        verbose=not args.quiet,
+    )
+
+    coordinator = ProductDiscoveryCoordinator(config)
+    result = coordinator.run()
+
+    if args.save_trace:
+        saved_path = result.trace.save_trace(args.save_trace)
+        print(f"\nTrace saved to: {saved_path}")
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    question = SCENARIOS[args.scenario] if args.scenario else get_question()
+
+    if args.mode == "coordinator":
+        run_coordinator(args, question)
+    else:
+        run_single_agent(args, question)
 
     return 0
 

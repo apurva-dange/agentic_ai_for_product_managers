@@ -1,0 +1,168 @@
+========================================================================
+PRODUCT QUESTION
+Should we build dark mode?
+========================================================================
+
+COORDINATOR PLAN
+1. Determine whether meaningful customer demand exists.
+   reason: The decision requires evidence of customer demand.
+2. Assess competitive and market positioning.
+   reason: The request affects a user-facing feature where competitive context is relevant.
+3. Estimate relative implementation effort and dependencies.
+   reason: The request affects the product across one or more components and needs an effort estimate.
+4. Identify risks and define success metrics.
+   reason: Every feature decision needs risk awareness and a way to measure success.
+------------------------------------------------------------------------
+
+Customer Insights Agent: running...
+Customer Insights Agent: SUCCESS
+
+Market Research Agent: running...
+  [Market Research Agent] not retrying: execution failure; not retried
+Market Research Agent: FAILED
+  error: market_research_agent: simulated unhandled execution failure.
+
+Technical Feasibility Agent: running...
+Technical Feasibility Agent: SUCCESS
+
+Risk and Metrics Agent: running...
+Risk and Metrics Agent: SUCCESS
+
+EVIDENCE GAPS
+- Market Research unavailable: market_research_agent: simulated unhandled execution failure.
+
+FINAL RECOMMENDATION
+Add to roadmap
+
+CONFIDENCE
+Low
+
+========================================================================
+FULL DECISION BRIEF (JSON)
+========================================================================
+{
+  "feature": "dark mode",
+  "decision_question": "Should we build dark mode?",
+  "recommendation": "Add to roadmap",
+  "confidence": "Low",
+  "executive_summary": "For 'dark mode': customer demand is high; estimated engineering effort is medium; identified risk levels include Low. 1 specialist area(s) could not be evaluated and are called out below. Suggested next step: add to roadmap.",
+  "customer_insights": {
+    "status": "success",
+    "summary": "42 matching customer requests found for 'dark mode', spanning segments: enterprise, individual, smb. Demand strength: high.",
+    "key_evidence": [
+      {
+        "id": "FB-DM-001",
+        "segment": "enterprise",
+        "comment": "Our night-shift analysts stare at this dashboard for hours. A dark theme would reduce eye strain considerably."
+      },
+      {
+        "id": "FB-DM-002",
+        "segment": "enterprise",
+        "comment": "Please add dark mode. Half our SOC team works overnight and the bright UI is rough on the eyes."
+      },
+      {
+        "id": "FB-DM-003",
+        "segment": "smb",
+        "comment": "Small thing, but a dark mode toggle would be nice for late-night bookkeeping sessions."
+      },
+      {
+        "id": "FB-DM-004",
+        "segment": "individual",
+        "comment": "Every other app I use has dark mode, this one feels dated without it."
+      },
+      {
+        "id": "FB-DM-005",
+        "segment": "enterprise",
+        "comment": "Battery drain on OLED laptops is noticeably worse with the current bright theme during travel."
+      }
+    ],
+    "customer_segments": [
+      "enterprise",
+      "individual",
+      "smb"
+    ],
+    "demand_strength": "high",
+    "limitations": [
+      "Higher evening abandonment is correlational, not causal - it may reflect fatigue, device switching, or notification interruptions rather than screen brightness.",
+      "The analytics system does not currently capture ambient lighting or device brightness settings."
+    ]
+  },
+  "market_research": {
+    "status": "failed",
+    "summary": "",
+    "key_evidence": [],
+    "market_expectation": "unknown",
+    "differentiation_opportunities": []
+  },
+  "technical_feasibility": {
+    "status": "success",
+    "summary": "Estimated effort for 'dark mode' on web: Medium. Effort increases if both web and native mobile clients must be themed consistently.",
+    "effort": "Medium",
+    "dependencies": [
+      "Design system / token infrastructure",
+      "Charting library theme support"
+    ],
+    "affected_systems": [
+      "web"
+    ],
+    "limitations": [
+      "This is a relative, teaching-purpose estimate based on predefined local rules, not a real engineering commitment."
+    ]
+  },
+  "risk_and_metrics": {
+    "status": "success",
+    "summary": "Identified 1 risk item(s) for 'dark mode' (levels: Low). Human approval required: False.",
+    "risks": [
+      {
+        "category": "accessibility",
+        "level": "Low",
+        "reason": "New theme must maintain WCAG AA contrast ratios; risk of regressions if not tested.",
+        "recommended_review": "Accessibility/design QA pass on both themes",
+        "human_approval_required": false
+      }
+    ],
+    "success_metrics": [
+      "Percentage of active users who enable dark mode within 30 days (proposed)",
+      "Change in evening-session duration after release (proposed)",
+      "Change in evening-session abandonment rate after release (proposed)",
+      "Volume of accessibility-related support tickets after release (proposed)",
+      "Dark mode retention rate after 30 days (proposed)"
+    ],
+    "limitations": [
+      "These are teaching-example risk flags based on predefined local rules, not a substitute for a real legal, security, or compliance review."
+    ]
+  },
+  "evidence_gaps": [
+    "Market Research unavailable: market_research_agent: simulated unhandled execution failure."
+  ],
+  "contradictions": [],
+  "assumptions": [
+    "Assumes the synthetic customer requests reviewed are representative of broader demand.",
+    "Assumes platform scope is limited to: web.",
+    "Assumes the dependencies listed are already available or approved to build against."
+  ],
+  "recommended_next_steps": [
+    "Review: Accessibility/design QA pass on both themes",
+    "Re-run the analysis for the failed area(s) once that evidence source is available."
+  ],
+  "experiment_proposal": {
+    "objective": "Validate whether 'dark mode' delivers the expected value before a full build commitment.",
+    "target_users": [
+      "enterprise",
+      "individual",
+      "smb"
+    ],
+    "success_metrics": [
+      "Percentage of active users who enable dark mode within 30 days (proposed)",
+      "Change in evening-session duration after release (proposed)",
+      "Change in evening-session abandonment rate after release (proposed)"
+    ],
+    "decision_rule": "Proceed to a full build if the proposed success metrics trend positively during the experiment window; otherwise re-evaluate."
+  },
+  "failed_agents": [
+    "market_research"
+  ],
+  "human_decision_required": true
+}
+
+Trace saved to: examples/coordinator_market_failure_trace.json

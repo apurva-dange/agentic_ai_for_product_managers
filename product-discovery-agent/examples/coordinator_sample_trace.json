@@ -1,0 +1,194 @@
+[
+  {
+    "sequence": 1,
+    "event_type": "coordinator_request_received",
+    "timestamp": "2026-07-27T02:11:30.883060+00:00",
+    "detail": "Received product question: 'Should we build dark mode?'",
+    "agent_name": null,
+    "task_id": null
+  },
+  {
+    "sequence": 2,
+    "event_type": "evidence_requirement_identified",
+    "timestamp": "2026-07-27T02:11:30.884052+00:00",
+    "detail": "Identified 4 required evidence area(s); 0 deemed unnecessary for this question.",
+    "agent_name": null,
+    "task_id": null
+  },
+  {
+    "sequence": 3,
+    "event_type": "task_created",
+    "timestamp": "2026-07-27T02:11:30.884068+00:00",
+    "detail": "The decision requires evidence of customer demand.",
+    "agent_name": "customer_insights",
+    "task_id": "task-customer-001"
+  },
+  {
+    "sequence": 4,
+    "event_type": "task_created",
+    "timestamp": "2026-07-27T02:11:30.884075+00:00",
+    "detail": "The request affects a user-facing feature where competitive context is relevant.",
+    "agent_name": "market_research",
+    "task_id": "task-market-001"
+  },
+  {
+    "sequence": 5,
+    "event_type": "task_created",
+    "timestamp": "2026-07-27T02:11:30.884080+00:00",
+    "detail": "The request affects the product across one or more components and needs an effort estimate.",
+    "agent_name": "technical_feasibility",
+    "task_id": "task-technical-001"
+  },
+  {
+    "sequence": 6,
+    "event_type": "task_created",
+    "timestamp": "2026-07-27T02:11:30.884085+00:00",
+    "detail": "Every feature decision needs risk awareness and a way to measure success.",
+    "agent_name": "risk_and_metrics",
+    "task_id": "task-risk-001"
+  },
+  {
+    "sequence": 7,
+    "event_type": "context_package_created",
+    "timestamp": "2026-07-27T02:11:30.884115+00:00",
+    "detail": "Built isolated context package with sources: ['customer_feedback', 'product_analytics']",
+    "agent_name": "customer_insights",
+    "task_id": "task-customer-001"
+  },
+  {
+    "sequence": 8,
+    "event_type": "subagent_started",
+    "timestamp": "2026-07-27T02:11:30.884141+00:00",
+    "detail": "objective='Determine whether meaningful customer demand exists.'",
+    "agent_name": "customer_insights",
+    "task_id": "task-customer-001"
+  },
+  {
+    "sequence": 9,
+    "event_type": "subagent_completed",
+    "timestamp": "2026-07-27T02:11:30.884501+00:00",
+    "detail": "status=success",
+    "agent_name": "customer_insights",
+    "task_id": "task-customer-001"
+  },
+  {
+    "sequence": 10,
+    "event_type": "context_package_created",
+    "timestamp": "2026-07-27T02:11:30.884521+00:00",
+    "detail": "Built isolated context package with sources: ['competitors']",
+    "agent_name": "market_research",
+    "task_id": "task-market-001"
+  },
+  {
+    "sequence": 11,
+    "event_type": "subagent_started",
+    "timestamp": "2026-07-27T02:11:30.884540+00:00",
+    "detail": "objective='Assess competitive and market positioning.'",
+    "agent_name": "market_research",
+    "task_id": "task-market-001"
+  },
+  {
+    "sequence": 12,
+    "event_type": "subagent_completed",
+    "timestamp": "2026-07-27T02:11:30.884855+00:00",
+    "detail": "status=success",
+    "agent_name": "market_research",
+    "task_id": "task-market-001"
+  },
+  {
+    "sequence": 13,
+    "event_type": "context_package_created",
+    "timestamp": "2026-07-27T02:11:30.884882+00:00",
+    "detail": "Built isolated context package with sources: ['engineering_rules']",
+    "agent_name": "technical_feasibility",
+    "task_id": "task-technical-001"
+  },
+  {
+    "sequence": 14,
+    "event_type": "subagent_started",
+    "timestamp": "2026-07-27T02:11:30.884904+00:00",
+    "detail": "objective='Estimate relative implementation effort and dependencies.'",
+    "agent_name": "technical_feasibility",
+    "task_id": "task-technical-001"
+  },
+  {
+    "sequence": 15,
+    "event_type": "subagent_completed",
+    "timestamp": "2026-07-27T02:11:30.885287+00:00",
+    "detail": "status=success",
+    "agent_name": "technical_feasibility",
+    "task_id": "task-technical-001"
+  },
+  {
+    "sequence": 16,
+    "event_type": "context_package_created",
+    "timestamp": "2026-07-27T02:11:30.885306+00:00",
+    "detail": "Built isolated context package with sources: ['risk_rules']",
+    "agent_name": "risk_and_metrics",
+    "task_id": "task-risk-001"
+  },
+  {
+    "sequence": 17,
+    "event_type": "subagent_started",
+    "timestamp": "2026-07-27T02:11:30.885325+00:00",
+    "detail": "objective='Identify risks and define success metrics.'",
+    "agent_name": "risk_and_metrics",
+    "task_id": "task-risk-001"
+  },
+  {
+    "sequence": 18,
+    "event_type": "subagent_completed",
+    "timestamp": "2026-07-27T02:11:30.885541+00:00",
+    "detail": "status=success",
+    "agent_name": "risk_and_metrics",
+    "task_id": "task-risk-001"
+  },
+  {
+    "sequence": 19,
+    "event_type": "result_validation_completed",
+    "timestamp": "2026-07-27T02:11:30.885556+00:00",
+    "detail": "no issues",
+    "agent_name": "customer_insights",
+    "task_id": null
+  },
+  {
+    "sequence": 20,
+    "event_type": "result_validation_completed",
+    "timestamp": "2026-07-27T02:11:30.885563+00:00",
+    "detail": "no issues",
+    "agent_name": "market_research",
+    "task_id": null
+  },
+  {
+    "sequence": 21,
+    "event_type": "result_validation_completed",
+    "timestamp": "2026-07-27T02:11:30.885569+00:00",
+    "detail": "no issues",
+    "agent_name": "technical_feasibility",
+    "task_id": null
+  },
+  {
+    "sequence": 22,
+    "event_type": "result_validation_completed",
+    "timestamp": "2026-07-27T02:11:30.885574+00:00",
+    "detail": "no issues",
+    "agent_name": "risk_and_metrics",
+    "task_id": null
+  },
+  {
+    "sequence": 23,
+    "event_type": "aggregation_completed",
+    "timestamp": "2026-07-27T02:11:30.885696+00:00",
+    "detail": "Combined validated subagent results into one brief.",
+    "agent_name": null,
+    "task_id": null
+  },
+  {
+    "sequence": 24,
+    "event_type": "final_decision_generated",
+    "timestamp": "2026-07-27T02:11:30.885705+00:00",
+    "detail": "recommendation='Add to roadmap' confidence='High'",
+    "agent_name": null,
+    "task_id": null
+  }
+]
